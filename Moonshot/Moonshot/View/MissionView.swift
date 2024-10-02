@@ -8,13 +8,10 @@
 import SwiftUI
 
 struct MissionView: View {
-    struct CrewMember {
-        let role: String
-        let astronaut: Astronaut
-    }
+
     
     let mission: Mission
-    let crew: [CrewMember]
+    let crews: [Crew]
     
     var body: some View {
         ScrollView {
@@ -25,6 +22,8 @@ struct MissionView: View {
                     .containerRelativeFrame(.horizontal) { width, axis in
                         width * 0.6
                     }
+                    .accessibilityElement()
+                    .accessibilityLabel(mission.badge)
                 
                                 
                 VStack(alignment: .leading) {
@@ -36,6 +35,11 @@ struct MissionView: View {
                     Text("Mission Highlights")
                         .font(.title.bold())
                         .padding(.bottom, 5)
+                    
+                    Text("Launch date: \(self.mission.formattedLaunchDate)")
+                        .foregroundStyle(.white.opacity(0.5))
+                    
+                    Spacer()
                     
                     Text(mission.description)
                     
@@ -51,35 +55,7 @@ struct MissionView: View {
                 }
                 .padding(.horizontal)
                 
-                ScrollView(.horizontal, showsIndicators: false) {
-                    HStack {
-                        ForEach(crew, id: \.role) { crewMember in
-                            NavigationLink {
-                                AstronautView(astronaut: crewMember.astronaut)
-                            } label: {
-                                HStack {
-                                    Image(crewMember.astronaut.id)
-                                        .resizable()
-                                        .frame(width: 104, height: 72)
-                                        .clipShape(.capsule)
-                                        .overlay(
-                                            Capsule()
-                                                .strokeBorder(.white, lineWidth: 1)
-                                        )
-                                    VStack(alignment: .leading) {
-                                        Text(crewMember.astronaut.name)
-                                            .foregroundStyle(.white)
-                                            .font(.headline)
-                                        
-                                        Text(crewMember.role)
-                                            .foregroundStyle(.white.opacity(0.5))
-                                    }
-                                }
-                                .padding(.horizontal)
-                            }
-                        }
-                    }
-                }
+                CrewView(crews: crews)
             }
             .padding(.bottom)
         }
@@ -90,9 +66,9 @@ struct MissionView: View {
     
     init(mission: Mission, astronauts: [String: Astronaut]) {
         self.mission = mission
-        self.crew = mission.crew.map { member in
+        self.crews = mission.crew.map { member in
             if let astronaut = astronauts[member.name] {
-                return CrewMember(role: member.role, astronaut: astronaut)
+                return Crew(role: member.role, astronaut: astronaut)
             } else {
                 fatalError("Missing \(member.name)")
             }
